@@ -15,7 +15,7 @@ import java.sql.Statement;
  */
 public class insertMovies {
     public String insertToMovies(String name, String country,String details,String assessment,String linkTokinopois,
-            String vision,String check_m ) throws SQLException {
+            String vision,String check_m) throws SQLException {
         database_mysql db = new database_mysql();
         db.getConnection();
        String command = "insert into movies(name,country,details,assessment,linkTokinopois,vision,check_m) values\n" +

@@ -16,25 +16,25 @@
         <div class="row">
             <div class="col-md-7">
                 <p>Регистрируясь - Вы соглашаетесь с правилами сайта</p>
-                <form action="registration.htm" method="POST">
+                <form action="registration.htm" method="POST" onsubmit="registration();return false;">
                     <label>Имя:</label>
-                    <input type="text" name="name" class="form-control">
+                    <input type="text" name="name" id="name_json" class="form-control">
 
                     <label>Фамилия:</label>
-                    <input type="text" name="surname" class="form-control"><br>
+                    <input type="text" name="surname" id="surname_json" class="form-control"><br>
 
                     <label>Почта:</label>
-                    <input type="email" name="email" class="form-control"><br>
+                    <input type="email" name="email" id="email_json" class="form-control"><br>
                     
                     <label>Возраст:</label>
                     <input type="number" min="16" max="99" name="age" class="form-control"><br>
                     
                     <label>Пароль:</label>
-                    <input type="password" maxlength="14" name = "password" class="form-control">
+                    <input type="password" maxlength="14" name = "password" id="password_json" class="form-control">
                     
                     <label>Повторите пароль:</label>
-                    <input type="password" maxlength="14" name = "re_password" class="form-control"><br><br>
-                    <input type="submit" class="btn btn-default">
+                    <input type="password" maxlength="14" name = "re_password" id="re_password_json" class="form-control"><br><br>
+                    <input type="submit" class="btn btn-default" onsubmit="registration();return false;">
                 </form>
             </div>
             <div class="col-md-5">
@@ -44,6 +44,7 @@
                     <li>Вораст от 16 лет</li>
                     <li>Пароли должны быть идентичны и не более 14 символов. Должен состоять из цифр и букв</li>
                 </ul>
+                <div id = "result"></div>
                 <c:if test="${not empty list}">
                     <h3>Вы совершили такие ошибки при вводе</h3>
                     <ul>

@@ -71,6 +71,7 @@
                                 </select>
                             </div>
                             <input type="submit" class="btn btn-default">
+                            <input type="submit" value="Просмотр" name="view_mode" class="btn btn-default" formtarget="_blank">
                              </c:forEach>
                         </form>
                         <c:if test="${not empty message_true}">

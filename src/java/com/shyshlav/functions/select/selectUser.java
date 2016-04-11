@@ -33,7 +33,46 @@ public class selectUser {
             db.rs.getString("email"),
             db.rs.getString("role_"),
             db.rs.getString("balance"),
-            db.rs.getString("id")));
+            db.rs.getString("id"),
+            db.rs.getString("link_to_image"),
+            db.rs.getString("about_me")));
+        }
+        }
+        catch(Exception ex)
+        {
+             System.out.println(ex);
+        }
+        finally
+        {
+            db.closeConnection();
+            db.rs.close();
+            db.st.close();
+        }
+        for(user z : result)
+        {
+            System.out.println(z);
+        }
+        return result;
+    }   
+    public List<user> selectUserFromId(String param,String id) throws SQLException
+    {
+        result.clear();
+        String query = "select * from users where "+param+" = '" + id +"'";
+        db.getConnection();
+        try
+        {
+        db.rs = db.st.executeQuery(query);
+        while(db.rs.next())
+        {       
+            result.add(new user (db.rs.getString("name"),
+            db.rs.getString("surname"),
+            db.rs.getString("password"),
+            db.rs.getString("email"),
+            db.rs.getString("role_"),
+            db.rs.getString("balance"),
+            db.rs.getString("id"),
+            db.rs.getString("link_to_image"),
+            db.rs.getString("about_me")));
         }
         }
         catch(Exception ex)

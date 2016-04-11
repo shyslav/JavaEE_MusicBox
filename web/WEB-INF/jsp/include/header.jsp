@@ -21,6 +21,8 @@
     }
     Iterator itr;
 %>
+<%response.setCharacterEncoding("UTF-8");
+    request.setCharacterEncoding("UTF-8");%>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -31,10 +33,90 @@
         <meta name="description" content="">
         <meta name="author" content="">
         <title>Music Box</title>
+        <script src="/musicbox/main_css/js/jquery.js"></script>
+        <script type="text/javascript">
+            function FilmSearch()
+            {
+                $.getJSON("FilmSearch.json",
+                        {CHARS: $('#searchBox').val()},
+                function (data)
+                {
+
+                    console.log("succes");
+                    history.pushState({index: "search"}, null, "index.htm?search=" + $('#searchBox').val());
+                    if (data.length === 0)
+                    {
+                        $('#results').text('По запросу ничего не найдено');
+                    }
+                    for (var index in data)
+                    {
+//                        $('#results').append(data[index].name);
+//                        $('#film_name').append(data[index].name);
+                        $('#results').html("<div class=\"row\">" +
+                                "<div class=\"col-md-7\">" +
+                                "<a href=\"#\">" +
+                                "<img class=\"img-responsive\" src=\"http://placehold.it/700x300\">" +
+                                "</a></div>" +
+                                "<div class=\"col-md-5\">" +
+                                " <h3 id =\"film_name\"><span>" + data[index].name + "</span></h3>" +
+                                " <h4 id =\"film_country\">Страна: " + data[index].country + "</h4>" +
+                                " <p id =\"film_details\">" + data[index].details + "</p>" +
+                                " <p id = \"film_assesment\">Рейтинг: " + data[index].assesment + "</p>" +
+                                " <p><a href=\"" + data[index].linkTokinopois + "\" target=\"_blank\">Кинопоиск</a></p>" +
+                                " <a class=\"btn btn-primary\" href=\"${pageContext.request.contextPath}/listen/" + data[index].id + ".htm\">Слушать музыку<span class=\"glyphicon glyphicon-chevron-right\"></span></a>" +
+                                "</div></div><hr>"
+                                );
+                    }
+                });
+            }
+            function authorisation() {
+                $.get("authorisation.json", {email: $('#email').val(), password: $('#password').val()},
+                function (data)
+                {
+                    console.log("success");
+                    $('#result').text('');
+                    $('#result').append(data);
+                    if (data == 'ok')
+                    {
+                        window.location.replace("index.htm");
+                    }
+                }, "text")
+            }
+            function registration() {
+                $.get("registration.json", {name: $('#name_json').val(), 
+                surname: $('#surname_json').val(),
+                email: $('#email_json').val(),
+                password: $('#password_json').val(),
+                re_password: $('#re_password_json').val()},
+                function (data)
+                {
+                    console.log("success");
+                    $('#result').text('');
+                    $('#result').append(data);
+                    if (data == 'ok')
+                    {
+                        window.location.replace("index.htm");
+                    }
+                }, "text")
+            }
+            function ticket() {
+                $.get("ticket.json", {email: $('#email_json').val(), 
+                name: $('#name_json').val(),
+                comm: $('#comm_json').val()},
+                function (data)
+                {
+                    console.log("success");
+                    $('#result').text('');
+                    $('#result').append(data);
+                }, "text")
+            }
+        </script>
+
         <!-- Bootstrap Core CSS -->
         <link href="/musicbox/main_css/css/bootstrap.min.css" rel="stylesheet">
         <!-- Custom CSS -->
         <link href="/musicbox/main_css/css/1-col-portfolio.css" rel="stylesheet">
+        <link href="/musicbox/main_css/css/main.css" rel="stylesheet">
     </head>
 
     <body>
@@ -63,14 +145,14 @@
                         %>
                         <c:if test="${not empty about_user}">
                             <c:forEach items="${about_user}" var="item">
-                                <li> <a>${item.name}
+                                <li> <a href="${pageContext.request.contextPath}/edit_user.htm">${item.name}
                                         ${item.surname},
                                         Ваш баланс:${item.balance}$</a></li>
                                     </c:forEach>
                                 </c:if>
                                 <c:if test="${not empty about_user}">
                             <li>
-                                <a href="exit.htm">Выход</a>  
+                                <a href="${pageContext.request.contextPath}/exit.htm">Выход</a>  
                             </li>
                         </c:if>
                     </ul>

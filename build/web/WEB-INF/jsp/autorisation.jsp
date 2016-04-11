@@ -18,32 +18,32 @@
             <c:if test="${empty about_user}">
             <div class="col-md-7">
                 <p>Авторизируясь - Вы соглашаетесь с правилами сайта</p>
-                <form action="autorisation.htm" method="POST">
+                <form action="autorisation.htm" method="POST" onsubmit="authorisation();return false;">
                     <label>Почта:</label>
-                    <input type="email" name="email" class="form-control"><br>
+                    <input id = "email" type="email" name="email" class="form-control"><br>
                     
                     <label>Пароль:</label>
-                    <input type="password" maxlength="14" name = "password" class="form-control">
+                    <input id = "password" type="password" maxlength="14" name = "password" class="form-control">
                     <br>
-                    <input type="submit" class="btn btn-default">
+                    <input type="submit" class="btn btn-default" onsubmit="authorisation();return false;">
                 </form>
             </div> 
             </c:if>
             <c:if test="${not empty about_user}">
                 <div class="col-md-7">
                 <p>Авторизируясь - Вы соглашаетесь с правилами сайта</p>
-                <form action="autorisation.htm" method="POST">
+                <form action="autorisation.htm" method="POST" onsubmit="authorisation();return false;">
                     <label>Почта:</label>
-                    <input type="email" name="email" class="form-control" readonly><br>
+                    <input id = "email" type="email" name="email" class="form-control" readonly><br>
                     
                     <label>Пароль:</label>
-                    <input type="password" maxlength="14" name = "password" class="form-control" readonly>
+                    <input id = "password" type="password" maxlength="14" name = "password" class="form-control" readonly>
                 </form>
                 Вы уже авторезированны
             </div> 
             </c:if>
         <!-- /.row -->
-        
+        <div id = "result"></div>
         <div class="col-md-5">
          <c:if test="${not empty auth}">
                     ${auth}

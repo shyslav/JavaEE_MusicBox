@@ -3,10 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/P:/java_web_proj/musicbox/src/java/com/shyslav/controller/AdminController.java</file>
-            <file>file:/P:/java_web_proj/musicbox/src/java/com/shyshlav/delete/deleteMusicOnFilm.java</file>
-            <file>file:/P:/java_web_proj/musicbox/web/WEB-INF/jsp/admin/music.jsp</file>
-            <file>file:/P:/java_web_proj/musicbox/web/WEB-INF/jsp/admin/musiconfiln.jsp</file>
+            <file>file:/P:/github/music_box/src/java/com/shyslav/controller/JsonController.java</file>
         </group>
     </open-files>
 </project-private>

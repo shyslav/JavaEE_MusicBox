@@ -1,0 +1,49 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 20.01.2016, 18:36:49
+    Author     : Shyshkin Vladyslav
+*/
+/*.like_dislike
+        {
+                width: 50px;
+                height: 50px;
+                border: 1px solid white;
+                padding: 10px;
+        }
+        .like_dislike:hover
+        {
+                -moz-box-shadow: 0 0 10px #ccc;
+                -webkit-box-shadow: 0 0 10px #ccc;
+                box-shadow: 0 0 10px #ccc;
+        }*/
+.like_dislike img{
+    width:30px;
+    height:30px;
+    opacity: 1;
+    filter: alpha(opacity=100);
+    vertical-align:middle;
+    margin: 0 0 20px 10px;
+    background: url(/musicbox/main_css/img/like.png) no-repeat;
+}
+.like_dislike img:hover
+{
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+}
+#comments{
+    width: 100%;
+    box-shadow: 0 0 4px rgba(0,0,0,0.5);/* Параметры тени */
+    background-color: #FFFFFF;
+    border: 1px solid #696969;
+    border-radius: 5px 20px 30px 20px;
+    
+}
+#centerbuttons
+{
+    text-align: center;
+}
+

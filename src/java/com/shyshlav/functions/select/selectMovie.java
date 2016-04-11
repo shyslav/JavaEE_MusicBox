@@ -48,7 +48,7 @@ public class selectMovie {
     }
     public List<movies> selectMoviesFromName(String name) throws SQLException
     {
-        String query = "select id, name,(select name from country where id = movies.country) country,details,assessment,linkTokinopois,vision,check_m from movies where name like '%"+name+"%'";
+        String query = "select id, name,(select name from country where id = movies.country) country,details,assessment,linkTokinopois,vision,check_m from movies where name like '%"+name+"%' and vision = '+'";
         db.getConnection();
         try
         {

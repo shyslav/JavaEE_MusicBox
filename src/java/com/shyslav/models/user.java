@@ -17,17 +17,36 @@ public class user {
    private String role_; 
    private String balance;
    private String id;
+   private String link_to_image;
+   private String about_me;
 
-    public user(String name,String surname, String password, String email, String role_, String balance,String id) {
+    public user(String name, String surname, String password, String email, String role_, String balance, String id, String link_to_image, String about_me) {
         this.name = name;
+        this.surname = surname;
         this.password = password;
         this.email = email;
         this.role_ = role_;
         this.balance = balance;
-        this.surname = surname;
-        this.id=id;
+        this.id = id;
+        this.link_to_image = link_to_image;
+        this.about_me = about_me;
     }
 
+    public String getLink_to_image() {
+        return link_to_image;
+    }
+
+    public void setLink_to_image(String link_to_image) {
+        this.link_to_image = link_to_image;
+    }
+
+    public String getAbout_me() {
+        return about_me;
+    }
+
+    public void setAbout_me(String about_me) {
+        this.about_me = about_me;
+    }
     public String getId() {
         return id;
     }

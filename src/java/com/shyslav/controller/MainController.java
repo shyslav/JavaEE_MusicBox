@@ -1,20 +1,32 @@
 package com.shyslav.controller;
 
+import com.shyshlav.NoDbFunc.md5;
+import com.shyshlav.delete.deleteComments;
+import com.shyshlav.delete.deleteLikes;
 import com.shyshlav.functions._userInsert;
+import com.shyshlav.functions.filework.download_image;
+import com.shyshlav.functions.insert.insertFilmComment;
+import com.shyshlav.functions.insert.insertLikes;
+import com.shyshlav.functions.insert.insertPrivateMessages;
 import com.shyshlav.functions.insert.insertTicket;
+import com.shyshlav.functions.select.selectFilmComment;
 import com.shyshlav.functions.select.selectFixList;
+import com.shyshlav.functions.select.selectLikes;
 import com.shyshlav.functions.select.selectMovie;
 import com.shyshlav.functions.select.selectMusicOnFilm;
 import com.shyshlav.functions.select.selectNews;
+import com.shyshlav.functions.select.selectPrivateMessages;
 import com.shyshlav.functions.select.selectTicket;
 import com.shyshlav.functions.select.selectUser;
 import com.shyshlav.validation.validation_auth;
 import com.shyshlav.validation.validation_reg;
+import com.shyshlav.validation.validator_request;
 import com.shyslav.models.Person;
 import com.shyslav.models.SimpleRss;
 import com.shyslav.models.movies;
 import com.shyslav.models.news;
 import com.shyslav.models.user;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -31,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.portlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class MainController implements standartparam {
@@ -60,9 +73,188 @@ public class MainController implements standartparam {
         ModelAndView mav = new ModelAndView();
         selectMovie sm = new selectMovie();
         selectMusicOnFilm smf = new selectMusicOnFilm();
+        selectLikes sl = new selectLikes();
+        selectFilmComment scf = new selectFilmComment();
         mv.addAttribute("music", sm.selectMoviesFromID(id));
         mv.addAttribute("music_list", smf.selectMusicToSite(id));
+        mv.addAttribute("likes_amount", sl.selectLikesOnFilm(id).size());
+        mv.addAttribute("all_comments", scf.selectCommentOnFilm(id));
         return "listen";
+    }
+
+        @RequestMapping(value = "/listen_view/{id}")
+    public String listeView(@PathVariable("id") String id, ModelMap mv) throws SQLException {
+        selectMovie sm = new selectMovie();
+        return "listen";
+    }
+    @RequestMapping(value = "/search_users")
+    public String search_user(HttpServletRequest request, ModelMap mv, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+       request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        redirectAttributes.addFlashAttribute("result_serach", "testing");
+        selectUser su = new selectUser();
+        redirectAttributes.addFlashAttribute("result_search_user", su.selectUser(request.getParameter("search_user")));
+        return "redirect:/edit_user.htm";
+    }
+
+    @RequestMapping(value = "/user/view/{id}")
+    public String viewUser(@PathVariable("id") String user_id, HttpServletRequest request, ModelMap mv, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        selectUser su = new selectUser();
+        mv.addAttribute("user_view", su.selectUserFromId("email",user_id));
+        return "user_view";
+    }
+
+    @RequestMapping(value = "/user/send/{id}")
+    public String sentUser(@PathVariable("id") String user_id, HttpServletRequest request, ModelMap mv, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        selectUser su = new selectUser();
+        HttpSession ses = request.getSession();
+        if (ses.getAttribute("about_user") == null) {
+            return "redirect:/index.htm";
+        }
+        List<user> us = (List<user>) ses.getAttribute("about_user");
+        mv.addAttribute("user_to_email", su.selectUserFromId("email",user_id).get(0).getEmail());
+        mv.addAttribute("user_from_email", us.get(0).getEmail());
+        mv.addAttribute("user_to_id", su.selectUserFromId("email",user_id).get(0).getId());
+        mv.addAttribute("user_from_id", us.get(0).getId());
+        return "user_sent";
+    }
+
+    @RequestMapping(value = "/user/send/alredy_sent")
+    public String alreadySent(HttpServletRequest request, ModelMap mv, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+      request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        if (request.getParameter("user_to_id") != null
+                && request.getParameter("user_from_id") != null
+                && request.getParameter("message") != null) {
+            insertPrivateMessages ipm = new insertPrivateMessages();
+            ipm.insertPrivateMessages(request.getParameter("user_from_id"), request.getParameter("user_to_id"), request.getParameter("message"));
+        }
+        return "redirect:/edit_user.htm";
+    }
+
+    @RequestMapping(value = "/my_messages")
+    public String UserMessages(HttpServletRequest request, ModelMap mv, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        HttpSession ses = request.getSession();
+        if (ses.getAttribute("about_user") == null) {
+            return "redirect:/index.htm";
+        }
+        List<user> us = (List<user>) ses.getAttribute("about_user");
+        selectPrivateMessages spm = new selectPrivateMessages();
+        mv.addAttribute("messages_from",spm.selectAllMessages("user_from",us.get(0).getId()));
+        mv.addAttribute("messages_to",spm.selectAllMessages("user_to",us.get(0).getId()));
+        return "user_mail";
+    }
+
+    @RequestMapping(value = "/edit_user")
+    public String edit_user(HttpServletRequest request, ModelMap mv, RedirectAttributes redirectAttributes) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        HttpSession ses = request.getSession();
+        md5 md5 = new md5();
+        if (ses.getAttribute("about_user") != null) {
+            List<user> us = (List<user>) ses.getAttribute("about_user");
+            mv.addAttribute("name", us.get(0).getName());
+            mv.addAttribute("surname", us.get(0).getSurname());
+            mv.addAttribute("mail", us.get(0).getEmail());
+            mv.addAttribute("about_me", us.get(0).getAbout_me());
+            mv.addAttribute("image", us.get(0).getLink_to_image());
+            mv.addAttribute("id", us.get(0).getId());
+            if (request.getParameter("password_entered") != null) {
+                if (us.get(0).getPassword().equals(md5.md5Custom(request.getParameter("password_entered")))) {
+                    mv.addAttribute("message_editable", "Редактирование профиля открыто, но будьте осторожны при вводе данных");
+                    mv.addAttribute("editable", "not null");
+                } else {
+                    mv.addAttribute("message_editable", "Редактирование запрещено, пароли не совпадают");
+                }
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("message", "Сюда может попасть только авторизированный пользователь");
+            return "redirect:/index.htm";
+        }
+        return "edit_user";
+    }
+
+    @RequestMapping(value = "/edit_user_update")
+    public String update_user(ModelMap mv, HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) throws UnsupportedEncodingException, IOException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        response.setCharacterEncoding("UTF-8");
+        download_image di = new download_image();
+        String answer = di.download(request, response);
+        System.out.println(answer);
+        if (answer.equals("ok")) {
+            HttpSession ses = request.getSession();
+            ses.invalidate();
+            redirectAttributes.addFlashAttribute("comment_message", "данные изменены");
+            redirectAttributes.addFlashAttribute("comment_color", "green");
+        } else {
+            redirectAttributes.addFlashAttribute("comment_message", answer);
+            redirectAttributes.addFlashAttribute("comment_color", "red");
+        }
+        return "redirect:/edit_user.htm";
+    }
+
+    @RequestMapping(value = "/listen/film/comments/delete/{film_id}/{id}")
+    public String deleteComment(@PathVariable("film_id") String film_id, @PathVariable("id") String id, ModelMap mv, RedirectAttributes redirectAttributes) throws SQLException {
+        deleteComments dc = new deleteComments();
+        if (dc.deleteComments(id).equals("ok")) {
+            redirectAttributes.addFlashAttribute("comment_message", "Комментарий успешно удален");
+            redirectAttributes.addFlashAttribute("comment_color", "green");
+        } else {
+            redirectAttributes.addFlashAttribute("comment_message", "Повторите попытку позже");
+            redirectAttributes.addFlashAttribute("comment_color", "red");
+        }
+        return "redirect:/listen/" + film_id + ".htm";
+    }
+
+    @RequestMapping(value = "/listen/addComment")
+    public String addComment(ModelMap mv, RedirectAttributes redirectAttributes, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        insertFilmComment ifc = new insertFilmComment();
+        HttpSession ses = request.getSession();
+        String id = request.getParameter("film_id");
+        if (ses.getAttribute("about_user") == null) {
+            redirectAttributes.addFlashAttribute("comment_message", "Для того что-бы комментировать авторизируйтесь!");
+            redirectAttributes.addFlashAttribute("comment_color", "red");
+        } else if (request.getParameter("new_comments") != null) {
+            List<user> user = (List<user>) ses.getAttribute("about_user");
+            if (ifc.isertCommentToFilm(user.get(0).getId(), id, request.getParameter("new_comments")).equals("ok")) {
+                redirectAttributes.addFlashAttribute("comment_message", "Комментарий успешно добавлен");
+                redirectAttributes.addFlashAttribute("comment_color", "green");
+            } else {
+                redirectAttributes.addFlashAttribute("comment_message", "Повторите попытку позже");
+                redirectAttributes.addFlashAttribute("comment_color", "red");
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("comment_message", "Комментарий не может быть пустой");
+            redirectAttributes.addFlashAttribute("comment_color", "red");
+        }
+        System.out.println(id);
+        return "redirect:/listen/" + id + ".htm";
+    }
+
+    @RequestMapping(value = "/markFilm/{id}")
+    public String markFilm(@PathVariable("id") String id, ModelMap mv, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException {
+        HttpSession ses = request.getSession();
+        selectLikes sl = new selectLikes();
+        if (ses.getAttribute("about_user") == null) {
+            redirectAttributes.addFlashAttribute("mark_message", "Для того что-бы поставить лайк авторизируйтесь!");
+            redirectAttributes.addFlashAttribute("mark_color", "red");
+        } else {
+            List<user> user = (List<user>) ses.getAttribute("about_user");
+            if (sl.selectIfUserMarks(id, user.get(0).getId())) {
+                insertLikes il = new insertLikes();
+                il.insertLikesToFilm(user.get(0).getId(), id);
+                redirectAttributes.addFlashAttribute("mark_message", "Спасибо за вашу оценку");
+                redirectAttributes.addFlashAttribute("mark_color", "#4cae4c");
+            } else {
+                deleteLikes dl = new deleteLikes();
+                if (dl.LikesOnFilmDelete(user.get(0).getId(), id).equals("ok")) {
+                    redirectAttributes.addFlashAttribute("mark_message", "Вы ошиблись в том, что эта новость вам нравится");
+                    redirectAttributes.addFlashAttribute("mark_color", "#35D59D");
+                }
+            }
+        }
+        return "redirect:/listen/" + id + ".htm";
     }
 
     @RequestMapping(value = "/about", method = RequestMethod.GET)
@@ -186,6 +378,20 @@ public class MainController implements standartparam {
         return n;
     }
 
+    @RequestMapping(value = "/news/view/{page}.json")
+    public @ResponseBody
+    List<news> getNewsJson(@PathVariable("page") int page) throws SQLException {
+        selectNews sn = new selectNews();
+        List<news> news = sn.selectNewsFromId(page);
+//        n.setId(news.get(0).getId());
+//        n.setName(news.get(0).getName());
+//        n.setSmall_text(news.get(0).getSmall_text());
+//        n.setFull_text( news.get(0).getFull_text());
+//        n.setDate_create(news.get(0).getDate_create());
+//        n.setImg(news.get(0).getImg());
+        return news;
+    }
+
     @RequestMapping(value = "/rss")
     public String rss(ModelMap mv, HttpServletResponse response) throws SQLException {
         response.setContentType("application/xml");
@@ -204,14 +410,24 @@ public class MainController implements standartparam {
         return "testJS";
     }
 
-    @RequestMapping(value = "/searchJS", method = RequestMethod.GET, headers = "Accept=application/json")
+    @RequestMapping(value = "/searchJS.json")
     public @ResponseBody
-    List<String> jst(@RequestParam("CHARS") int chars) throws SQLException {
-            //selectNews sn = new selectNews();
+    List<news> jst(@RequestParam("CHARS") String chars) throws SQLException {
+        selectNews sn = new selectNews();
+        List<news> news = sn.selectNewsFromId(Integer.parseInt(chars));
+        List<String> stl = new LinkedList();
+        stl.add("test");
+        return news;
+    }
+
+    @RequestMapping(value = "/doSearchString")
+    public @ResponseBody
+    String doSearchString(@RequestParam("CHARS") String chars) throws SQLException {
+        //selectNews sn = new selectNews();
         // List <news> news = sn.selectNewsFromId(chars);
         List<String> stl = new LinkedList();
         stl.add("test");
-        return stl;
+        return "testing";
     }
 
     @RequestMapping(value = "/ticket")
@@ -220,10 +436,10 @@ public class MainController implements standartparam {
         selectTicket st = new selectTicket();
         HttpSession ses = request.getSession();
         if (ses.getAttribute("about_user") != null) {
-            List <user> user = (List <user>) ses.getAttribute("about_user");
-            mv.addAttribute("tickets",st.selectTicketsUsers(user.get(0).getId()));
+            List<user> user = (List<user>) ses.getAttribute("about_user");
+            mv.addAttribute("tickets", st.selectTicketsUsers(user.get(0).getId()));
         }
-        
+
         if (request.getParameter("email") != null && request.getParameter("name") != null && request.getParameter("comm") != null) {
             insertTicket it = new insertTicket();
             if (it.insertToTicket(request.getParameter("email"), "NOW()", request.getParameter("comm"), "-").equals("ok")) {
@@ -235,8 +451,8 @@ public class MainController implements standartparam {
         }
         return "ticket";
     }
-    
-        @RequestMapping(value = "/fixlist")
+
+    @RequestMapping(value = "/fixlist")
     public String fixlist(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
         selectFixList sfl = new selectFixList();

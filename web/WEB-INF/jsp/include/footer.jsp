@@ -5,7 +5,7 @@
         <footer>
             <div class="row">
                 <div class="col-lg-12">
-                    <p>Шишкин Владислав студент 3-го курса группы ИС-33 по всем вопросам <a href="${pageContext.request.contextPath}/ticket.htm">shyshkin_vlad@yahoo.com</a></p>
+                    <p><h4>Шишкин Владислав студент 3-го курса группы ИС-33 по всем вопросам</h4> <a href="${pageContext.request.contextPath}/ticket.htm"><author>shyshkin_vlad@yahoo.com</author></a></p>
                 </div>
             </div>
             <!-- /.row -->
@@ -15,10 +15,10 @@
     <!-- /.container -->
 
     <!-- jQuery -->
-    <script src="main_css/js/jquery.js"></script>
+    <script src="/musicbox/main_css/js/jquery.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="main_css/js/bootstrap.min.js"></script>
+    <script src="/musicbox/main_css/js/bootstrap.min.js"></script>
 
 </body>
 

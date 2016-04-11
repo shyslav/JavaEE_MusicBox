@@ -1,12 +1,13 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-
+            <%response.setCharacterEncoding("UTF-8");
+            request.setCharacterEncoding("UTF-8");%>
  <jsp:include page="include/header.jsp" flush="true"/>
     <!-- Page Content -->
     <div class="container">
- <form method="GET">
-     <input type="text" class="form-control" placeholder="Введите для поиска" name="search"/>
-     <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+        <form method="GET" onsubmit="FilmSearch();return false;">
+     <input type="text" class="form-control" placeholder="Введите для поиска" name="search" id="searchBox"/>
+     <button type="submit" class="btn btn-primary" onsubmit="FilmSearch();"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
  </form>
         <!-- Page Heading -->
         <div class="row">
@@ -17,6 +18,7 @@
             </div>
         </div>
         <!-- /.row -->
+        <div id="results">
         <%if(!request.getAttribute("result_ok").equals("ok"))
                 {%>
        
@@ -43,10 +45,10 @@
                 </a>
             </div>
             <div class="col-md-5">
-                <h3><span> ${items.name}</span></h3>
-                <h4>Страна: ${items.country}</h4>
-                <p>${items.details}</p>
-                <p>Рейтинг: ${items.assesment}</p>
+                <h3 id ="film_name"><span> ${items.name}</span></h3>
+                <h4 id ="film_country">Страна: ${items.country}</h4>
+                <p id ="film_details">${items.details}</p>
+                <p id = "film_assesment">Рейтинг: ${items.assesment}</p>
                 <p><a href="${items.linkTokinopois}" target="_blank">Кинопоиск</a></p>
                 <a class="btn btn-primary" href="${pageContext.request.contextPath}/listen/${items.id}.htm">Слушать музыку<span class="glyphicon glyphicon-chevron-right"></span></a>
             </div>
@@ -55,5 +57,5 @@
                </c:forEach>
         <!-- /.row -->
         <%}%>
-
+</div>
   <jsp:include page="include/footer.jsp" flush="true"/>

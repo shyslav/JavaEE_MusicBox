@@ -15,12 +15,16 @@
                 <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->
+            <form action="movies/edit/fast.htm" method="GET">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             Просмотр музыки
                         </div>
+                        <c:if test="${not empty message}">
+                            ${message}
+                        </c:if>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
                             <div class="dataTable_wrapper">
@@ -49,14 +53,16 @@
                                             <td>${item.details}</td>
                                             <td>${item.assesment}</td>
                                             <td><a href = "${item.linkTokinopois}" target="blank">KinoPoisk</a></td>
-                                            <td>${item.vision}</td>
-                                            <td>${item.check_m}</td>
+                                            <td><a href = "movies/edit/fast_vision/${item.id}.htm">${item.vision}</a></td>
+                                            <td><a href = "movies/edit/fast_check_m/${item.id}.htm">${item.check_m}</a></td>
                                             <td><a href = "movies/edit/${item.id}.htm">Править</a></td>
                                         </tr>
                                     </c:forEach>
                                     </tbody>
                                 </table>
                             </div>
+                            <input class="btn btn-primary" type="submit" value="Изменить видимость" name="vision">
+                            <input class="btn btn-primary" type="submit" value="Изменить провереность" name="check_m">
                             <a class="btn btn-primary" href="movies/add.htm">Добавить новый фильм<span class="glyphicon glyphicon-chevron-right"></span></a>
                             <br><br>
                             <!-- /.table-responsive -->
@@ -67,9 +73,11 @@
                         <!-- /.panel-body -->
                     </div>
                     <!-- /.panel -->
+                     
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
+                </form>
             <!-- /.row -->
         </div>
         <!-- /#page-wrapper -->

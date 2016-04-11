@@ -18,15 +18,16 @@
             <c:if test="${not empty about_user}">
             <div class="col-md-7">
                 <p>Авторизируясь - Вы соглашаетесь с правилами сайта</p>
-                <form action="ticket.htm" method="POST">
+                <form action="ticket.htm" method="POST" onsubmit="ticket();return false;">
                     <label>Почта:</label>
-                    <input type="email" name="email" class="form-control" value = "${about_user.get(0).email}" readonly><br>
+                    <input type="email" name="email" class="form-control" id = "email_json" value = "${about_user.get(0).email}" readonly><br>
                     <label>Имя:</label>
-                    <input type="text" maxlength="14" name = "name" class="form-control" value = "${about_user.get(0).name}" readonly>
+                    <input type="text" maxlength="14" name = "name" id = "name_json" class="form-control" value = "${about_user.get(0).name}" readonly>
                     <br>
                     <label>Текст тикета:</label>
-                    <textarea name = "comm" class="form-control" required></textarea>
-                    <input type="submit" class="btn btn-default">
+                    <textarea name = "comm" class="form-control" required id = "comm_json"></textarea>
+                    <br>
+                    <input type="submit" class="btn btn-default" onsubmit="ticket();return false;">
                 </form>
                     <h1>Ваши предыдущие сообщения:</h1>
                     <c:forEach items="${tickets}" var = "item">
@@ -57,6 +58,7 @@
                 Тикет успешно создан
             </div> 
             </c:if>
+            <div id="result"></div>
         <!-- /.row -->
         </div>
 <jsp:include page="include/footer.jsp" flush="true"/>

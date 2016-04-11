@@ -65,6 +65,7 @@
                                 </select>
                             </div>
                             <input type="submit" class="btn btn-default">
+                            <input type="submit" value="Просмотр" name="view_mode" class="btn btn-default" formtarget="_blank">
                         </form>
                         <c:if test="${not empty message_true}">
                             <p style = "color:green">${message_true}</p>

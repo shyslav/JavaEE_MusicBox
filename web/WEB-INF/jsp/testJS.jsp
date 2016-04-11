@@ -14,21 +14,37 @@
         <script type="text/javascript">
             function doSearch()
             {
-                $.getJSON("searchJS.htm",
+                $.getJSON("searchJS.json",
                 {CHARS: $('#searchBox').val()},
                 function (data)
                 {
+                    console.log("succes");
                     $('#results').text('');
                     for(var index in data)
                     {
-                        $('#results').append(data[index].id);
+                        $('#results').append(data[index]);
                     }
                 });
+            }
+             function doSearchString()
+            {
+                $.get("doSearchString.htm", {CHARS: $('#searchBoxString').val()},
+                        function (data)
+                        {
+                            console.log(";a;;a;a;;a");
+                            window.alert("test");
+                            $('#results').text('');
+                            for (var index in data)
+                            {
+                                $('#results').append(data[index].id);
+                            }
+                        },"text")
             }
         </script>
     </head>
     <body>
         <input type="text" onKeyUp="doSearch();" id ="searchBox"/>
+        <input type="text" onKeyUp="doSearchString();" id ="searchBoxString"/>
         
         <div id ="results">
             

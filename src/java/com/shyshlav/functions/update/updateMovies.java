@@ -14,17 +14,19 @@ import java.sql.SQLException;
  * @author Shyshkin Vladyslav
  */
 public class updateMovies {
+
     database_mysql db = new database_mysql();
-    public boolean updateMovies(String name, String country,String details,String assessment,String linkTokinopois,String vision,String check_m ,String id) throws SQLException {
+
+    public boolean updateMovies(String name, String country, String details, String assessment, String linkTokinopois, String vision, String check_m, String id) throws SQLException {
         String query = "update movies set "
-                + "name = '"+name+"',"
-                + "country= '"+country+"',"
-                + "details= '"+details+"',"
-                + "assessment = '"+assessment+"',"
-                + "linkTokinopois= '"+linkTokinopois+"',"
-                + "vision= '"+vision+"',"
-                + "check_m= '"+check_m+"'"
-                + "where id = "+id;
+                + "name = '" + name + "',"
+                + "country= '" + country + "',"
+                + "details= '" + details + "',"
+                + "assessment = '" + assessment + "',"
+                + "linkTokinopois= '" + linkTokinopois + "',"
+                + "vision= '" + vision + "',"
+                + "check_m= '" + check_m + "'"
+                + "where id = " + id;
         db.getConnection();
         try {
             db.st.execute(query);
@@ -33,10 +35,34 @@ public class updateMovies {
             return false;
         } finally {
             db.closeConnection();
-            if(!db.st.isClosed())
-            db.st.close(); 
+            if (!db.st.isClosed()) {
+                db.st.close();
+            }
         }
         db.closeConnection();
         return true;
-    } 
+    }
+
+    public boolean updateVisionOnCheck(String id, String choise) throws SQLException {
+        //String query = "update movies set " + choise + "='" + plusorminus + "' where id in(" + id + ")";
+        String query = "update movies set " + choise + "= case \n"
+                + "when " + choise + " = '+' THEN '-' \n"
+                + "when " + choise + " = '-' THEN '+'\n"
+                + "ELSE " + choise + " END \n"
+                + "WHERE id in("+id+")";
+        db.getConnection();
+        try {
+            db.st.execute(query);
+        } catch (SQLException ex) {
+            System.out.println(ex);
+            return false;
+        } finally {
+            db.closeConnection();
+            if (!db.st.isClosed()) {
+                db.st.close();
+            }
+        }
+        db.closeConnection();
+        return true;
+    }
 }

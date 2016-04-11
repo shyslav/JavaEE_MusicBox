@@ -43,6 +43,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -120,19 +121,17 @@ public class AdminController {
             mv.addAttribute("country_list", sc.selectCountry());
             selectAuthor sa = new selectAuthor();
             mv.addAttribute("list", sa.selectAuthorFromID(id));
-        } else {
-            if (request.getParameter("name") != null) {
-                Pattern p = Pattern.compile("-?\\d+");
-                Matcher m = p.matcher(request.getParameter("selected"));
-                String number = null;
-                while (m.find()) {
-                    number = m.group();
-                    break;
-                }
-                updateAuthor ua = new updateAuthor();
-                if (ua.update(request.getParameter("name"), number, request.getParameter("id"), request.getParameter("prev_name"))) {
-                    return "redirect:/admin/author.htm";
-                }
+        } else if (request.getParameter("name") != null) {
+            Pattern p = Pattern.compile("-?\\d+");
+            Matcher m = p.matcher(request.getParameter("selected"));
+            String number = null;
+            while (m.find()) {
+                number = m.group();
+                break;
+            }
+            updateAuthor ua = new updateAuthor();
+            if (ua.update(request.getParameter("name"), number, request.getParameter("id"), request.getParameter("prev_name"))) {
+                return "redirect:/admin/author.htm";
             }
         }
         return "admin/edit/EDITauthor";
@@ -145,67 +144,56 @@ public class AdminController {
         return "admin/music";
     }
 
-     @RequestMapping(value = "admin/music/edit/{id}")
-    private String musicEdit(ModelMap mv,@PathVariable("id") String id ,HttpServletRequest request,RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
-       request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
-        if(id.equals("edit"))
-       {
-           updateMusic um = new updateMusic();
-           selectAuthor sa = new selectAuthor();
-           List<author> res=  sa.selectAuthorFromID(request.getParameter("group"));
-           String add = um.updateMusic(request.getParameter("name"), request.getParameter("date"), request.getParameter("price"),request.getParameter("indef"),"/musicbox/music/"+res.get(0).getName()+"/"+request.getParameter("name")+".mp3");
-           if(add.equals("ok"))
-           {
+    @RequestMapping(value = "admin/music/edit/{id}")
+    private String musicEdit(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        if (id.equals("edit")) {
+            updateMusic um = new updateMusic();
+            selectAuthor sa = new selectAuthor();
+            List<author> res = sa.selectAuthorFromID(request.getParameter("group"));
+            String add = um.updateMusic(request.getParameter("name"), request.getParameter("date"), request.getParameter("price"), request.getParameter("indef"), "/musicbox/music/" + res.get(0).getName() + "/" + request.getParameter("name") + ".mp3");
+            if (add.equals("ok")) {
 
-               create_folder cf = new create_folder();
-               if(cf.renameFile(res.get(0).getName(), request.getParameter("lastname"), request.getParameter("name")))
-               {
-               redirectAttributes.addFlashAttribute("delete_ok", "Правка прошла успешно");
-               return "redirect:/admin/music.htm";
-               }
-               else
-               {
-               redirectAttributes.addFlashAttribute("delete_ok", "Переименовка файла не удалась");
-               return "redirect:/admin/music.htm";  
-               }
-           }
-           else
-           {
-               redirectAttributes.addFlashAttribute("delete_ok", "Правка не удалась"+add);
-               return "redirect:/admin/music.htm";
-           }
-       }
-        else
-        {
+                create_folder cf = new create_folder();
+                if (cf.renameFile(res.get(0).getName(), request.getParameter("lastname"), request.getParameter("name"))) {
+                    redirectAttributes.addFlashAttribute("delete_ok", "Правка прошла успешно");
+                    return "redirect:/admin/music.htm";
+                } else {
+                    redirectAttributes.addFlashAttribute("delete_ok", "Переименовка файла не удалась");
+                    return "redirect:/admin/music.htm";
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("delete_ok", "Правка не удалась" + add);
+                return "redirect:/admin/music.htm";
+            }
+        } else {
             selectMusic sm = new selectMusic();
             mv.addAttribute("music_edit", sm.selectMusicFromID(id));
         }
         return "admin/edit/EDITmusic";
     }
-     @RequestMapping(value = "admin/music/delete/{id}", method = RequestMethod.GET)
+
+    @RequestMapping(value = "admin/music/delete/{id}", method = RequestMethod.GET)
     private String musicDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         deleteMusic dm = new deleteMusic();
         selectMusicOnFilm sm = new selectMusicOnFilm();
         create_folder cf = new create_folder();
-        if(cf.delete(sm.selectPath(id).get(0).getMusic_id(),sm.selectPath(id).get(0).getFilm_id()))
-        {
-        String delete = dm.musicDelete(id);
-        if (delete.equals("ok")) {   
-            mv.addAttribute("delete_ok", "Удаление прошло успешно");
-            redirectAttributes.addFlashAttribute("delete_ok", "Удаление прошло успешно");
+        if (cf.delete(sm.selectPath(id).get(0).getMusic_id(), sm.selectPath(id).get(0).getFilm_id())) {
+            String delete = dm.musicDelete(id);
+            if (delete.equals("ok")) {
+                mv.addAttribute("delete_ok", "Удаление прошло успешно");
+                redirectAttributes.addFlashAttribute("delete_ok", "Удаление прошло успешно");
+            } else {
+                mv.addAttribute("delete_ok", "Не удалось удалить по причине" + delete);
+                redirectAttributes.addFlashAttribute("delete_ok", "Не удалось удалить по причине" + delete);
+            }
+            return "redirect:/admin/music.htm";
         } else {
-            mv.addAttribute("delete_ok", "Не удалось удалить по причине" + delete);
-            redirectAttributes.addFlashAttribute("delete_ok", "Не удалось удалить по причине" + delete);
-        }
-        return "redirect:/admin/music.htm";
-        }
-        else
-        {
-        redirectAttributes.addFlashAttribute("delete_ok", "Файл не найден обратитесь к администратору");
-        return "redirect:/admin/music.htm";
+            redirectAttributes.addFlashAttribute("delete_ok", "Файл не найден обратитесь к администратору");
+            return "redirect:/admin/music.htm";
         }
     }
-    
+
     @RequestMapping(value = "admin/testing")
     private String testing(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
@@ -224,6 +212,7 @@ public class AdminController {
         df.download(request, response);
         return "admin/testing";
     }
+
     @RequestMapping(value = "admin/music/add")
     private String upload(ModelMap mv, HttpServletRequest request, HttpServletResponse response) throws SQLException, UnsupportedEncodingException, IOException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
@@ -258,37 +247,55 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/movies/add")
-    private String moviesADD(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+    private String moviesADD(ModelMap mv, HttpServletRequest request,RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
-        selectCountry sc = new selectCountry();
-        mv.addAttribute("country_list", sc.selectCountry());
-        if (request.getParameter("send") == null) {
-            return "admin/add/ADDmovie";
-        } else {
-            String name = request.getParameter("name");
-            String textarea = request.getParameter("textarea");//details
-            String assessment = request.getParameter("assessment");
-            String linktokinopoisk = request.getParameter("linktokinopoisk");
-            String vision = request.getParameter("vision");
-            String check_m = request.getParameter("check_m");
-            String selected = request.getParameter("selected");//country
-            insertMovies im = new insertMovies();
-            yes_no yn = new yes_no();
-            getNumberInString gn = new getNumberInString();
-            String insert = im.insertToMovies(name, gn.getNumber(selected), textarea, assessment, linktokinopoisk, yn.plusorminus(vision), yn.plusorminus(check_m));
-            if (insert.equals("ok")) {
-                mv.addAttribute("message_true", "Успешно добавлено");
+        if (request.getParameter("view_mode") == null) {
+            selectCountry sc = new selectCountry();
+            mv.addAttribute("country_list", sc.selectCountry());
+            if (request.getParameter("send") == null) {
                 return "admin/add/ADDmovie";
             } else {
-                mv.addAttribute("message_false", "Произошла ошибка" + insert);
-                return "admin/add/ADDmovie";
+                String name = request.getParameter("name");
+                String textarea = request.getParameter("textarea");//details
+                String assessment = request.getParameter("assessment");
+                String linktokinopoisk = request.getParameter("linktokinopoisk");
+                String vision = request.getParameter("vision");
+                String check_m = request.getParameter("check_m");
+                String selected = request.getParameter("selected");//country
+                insertMovies im = new insertMovies();
+                yes_no yn = new yes_no();
+                getNumberInString gn = new getNumberInString();
+                String insert = im.insertToMovies(name, gn.getNumber(selected), textarea, assessment, linktokinopoisk, yn.plusorminus(vision), yn.plusorminus(check_m));
+                if (insert.equals("ok")) {
+                    mv.addAttribute("message_true", "Успешно добавлено");
+                    return "admin/add/ADDmovie";
+                } else {
+                    mv.addAttribute("message_false", "Произошла ошибка" + insert);
+                    return "admin/add/ADDmovie";
+                }
             }
+        } else if (request.getParameter("view_mode") != null) {
+                  String name = request.getParameter("name");
+                String textarea = request.getParameter("textarea");//details
+                String assessment = request.getParameter("assessment");
+                String linktokinopoisk = request.getParameter("linktokinopoisk");
+                String vision = request.getParameter("vision");
+                String check_m = request.getParameter("check_m");
+                String selected = request.getParameter("selected");//country
+                List <movies> result = new LinkedList();
+                 result.add(new movies(name,selected,textarea,assessment,
+            linktokinopoisk,vision,"view_mode",check_m));
+            redirectAttributes.addFlashAttribute("music", result);
+            return "redirect:/listen_view/" + "view_mode" + ".htm";
         }
-    }
+        return "admin/add/ADDmovie";
+}
 
-    @RequestMapping(value = "admin/movies/edit/{id}")
-    private String moviesEdit(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+@RequestMapping(value = "admin/movies/edit/{id}")
+        private String moviesEdit(ModelMap mv, @PathVariable("id") String id,RedirectAttributes redirectAttributes, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        if(request.getParameter("view_mode")==null)
+        {
         if (request.getParameter("send") == null) {
             selectCountry sc = new selectCountry();
             mv.addAttribute("country_list", sc.selectCountry());
@@ -316,18 +323,83 @@ public class AdminController {
                 return "admin/edit/EDITmovies";
             }
         }
+        }
+        else if(request.getParameter("view_mode")!=null)
+        {
+            List <movies> result = new LinkedList();
+            String name = request.getParameter("name");
+            String textarea = request.getParameter("textarea");//details
+            String assessment = request.getParameter("assessment");
+            String linktokinopoisk = request.getParameter("linktokinopoisk");
+            String vision = request.getParameter("vision");
+            String check_m = request.getParameter("check_m");
+            String selected = request.getParameter("selected");//country
+            result.add(new movies(name,selected,textarea,assessment,
+            linktokinopoisk,vision,request.getParameter("indef"),check_m));
+            redirectAttributes.addFlashAttribute("music", result);
+            return "redirect:/listen_view/" + request.getParameter("indef")+".htm";
+        }       
         return "admin/edit/EDITmovies";
     }
 
+    @RequestMapping(value = "admin/movies/edit/fast")
+        private String moviesFastEdit(ModelMap mv, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        if (request.getParameterValues("news_box") != null) {
+            String id = String.join(",", request.getParameterValues("news_box"));
+            updateMovies um = new updateMovies();
+            if (request.getParameter("vision") != null) {
+                if (um.updateVisionOnCheck(id, "vision")) {
+                    redirectAttributes.addFlashAttribute("message", "Изминение видимости прошло успешно");
+                } else {
+                    redirectAttributes.addFlashAttribute("message", "Изминение не удалось, перезагрузите страницу");
+                }
+            } else if (request.getParameter("check_m") != null) {
+                if (um.updateVisionOnCheck(id, "check_m")) {
+                    redirectAttributes.addFlashAttribute("message", "Изминение видимости прошло успешно");
+                } else {
+                    redirectAttributes.addFlashAttribute("message", "Изминение не удалось, перезагрузите страницу");
+                }
+            }
+            return "redirect:/admin/movies.htm";
+        } else {
+            redirectAttributes.addFlashAttribute("message", "Нужно выбрать параметры");
+            return "redirect:/admin/movies.htm";
+        }
+    }
+
+    @RequestMapping(value = "admin/movies/edit/fast_vision/{id}")
+        private String moviesFastEditVisionId(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        updateMovies um = new updateMovies();
+        if (um.updateVisionOnCheck(id, "vision")) {
+            redirectAttributes.addFlashAttribute("message", "Изминение видимости прошло успешно");
+        } else {
+            redirectAttributes.addFlashAttribute("message", "Изминение не удалось, перезагрузите страницу");
+        }
+        return "redirect:/admin/movies.htm";
+    }
+        @RequestMapping(value = "admin/movies/edit/fast_check_m/{id}")
+        private String moviesFastEditCheckmId(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        updateMovies um = new updateMovies();
+        if (um.updateVisionOnCheck(id, "check_m")) {
+            redirectAttributes.addFlashAttribute("message", "Изминение видимости прошло успешно");
+        } else {
+            redirectAttributes.addFlashAttribute("message", "Изминение не удалось, перезагрузите страницу");
+        }
+        return "redirect:/admin/movies.htm";
+    }
+
     @RequestMapping(value = "admin/musiconfilm", method = RequestMethod.GET)
-    private String musiconfiln(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+        private String musiconfiln(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         selectMusicOnFilm sm = new selectMusicOnFilm();
         mv.addAttribute("list", sm.selectMusicOnFilm());
         return "admin/musiconfiln";
     }
 
     @RequestMapping(value = "admin/musiconfilm/add")
-    private String musiconfilmADD(ModelMap mv, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        private String musiconfilmADD(ModelMap mv, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
         if (request.getParameter("send") == null) {
             selectMovie sm = new selectMovie();
@@ -354,7 +426,7 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/musiconfilm/edit/{id}")
-    private String musiconfilmEditStart(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        private String musiconfilmEditStart(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
         if (id.equals("edit")) {
             insertMusicOnFilm imf = new insertMusicOnFilm();
@@ -379,7 +451,7 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/musiconfilm/delete/{id}")
-    private String musiconfilmDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        private String musiconfilmDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
         deleteMusicOnFilm dmf = new deleteMusicOnFilm();
         String update = dmf.musicOnFilmDelete(id);
@@ -393,41 +465,35 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/news", method = RequestMethod.GET)
-    private String news(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+        private String news(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         selectNews sn = new selectNews();
         mv.addAttribute("news", sn.selectAllNews());
         return "admin/news";
     }
-    
+
     @RequestMapping(value = "admin/news/edit/{id}")
-    private String newsEdit(ModelMap mv, @PathVariable("id") String id,HttpServletRequest request,RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
-       request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
-        if(!id.equals("edit"))
-       {
-        selectNews sn = new selectNews();
-        mv.addAttribute("list_news", sn.selectNewsFromId(Integer.parseInt(id)));
-        selectRole sr = new selectRole();
-        mv.addAttribute("role_list", sr.selectRole());
-        return "admin/edit/EDITnews";
-       }
-       else
-       {
-           insertNews in = new insertNews();
-           String update = in.updateToNews(request.getParameter("name"), request.getParameter("small_text"), request.getParameter("full_text"), request.getParameter("img"), request.getParameter("indef"));
-           if(update.equals("ok"))
-           {
-             redirectAttributes.addFlashAttribute("edit_ok", "Правка прошла успешно");
-           }
-           else
-           {
-             redirectAttributes.addFlashAttribute("edit_ok", "Что-то пошло не так"+update);  
-           }
-           return "redirect:/admin/news.htm"; 
-       }
+        private String newsEdit(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        if (!id.equals("edit")) {
+            selectNews sn = new selectNews();
+            mv.addAttribute("list_news", sn.selectNewsFromId(Integer.parseInt(id)));
+            selectRole sr = new selectRole();
+            mv.addAttribute("role_list", sr.selectRole());
+            return "admin/edit/EDITnews";
+        } else {
+            insertNews in = new insertNews();
+            String update = in.updateToNews(request.getParameter("name"), request.getParameter("small_text"), request.getParameter("full_text"), request.getParameter("img"), request.getParameter("indef"));
+            if (update.equals("ok")) {
+                redirectAttributes.addFlashAttribute("edit_ok", "Правка прошла успешно");
+            } else {
+                redirectAttributes.addFlashAttribute("edit_ok", "Что-то пошло не так" + update);
+            }
+            return "redirect:/admin/news.htm";
+        }
     }
 
-        @RequestMapping(value = "admin/news/delete/{id}")
-    private String newsDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+    @RequestMapping(value = "admin/news/delete/{id}")
+        private String newsDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
         deleteNews dn = new deleteNews();
         String delete = dn.newsDelete(id);
@@ -439,9 +505,9 @@ public class AdminController {
             return "redirect:/admin/news.htm";
         }
     }
-    
+
     @RequestMapping(value = "admin/news/add")
-    private String newsADD(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+        private String newsADD(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
         if (request.getParameter("send") == null) {
             selectRole sr = new selectRole();
@@ -470,14 +536,14 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/ticket", method = RequestMethod.GET)
-    private String ticketView(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+        private String ticketView(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         selectTicket st = new selectTicket();
         mv.addAttribute("list_ticekt", st.selectTicket());
         return "admin/ticket";
     }
 
     @RequestMapping(value = "admin/ticket/delete/{id}", method = RequestMethod.GET)
-    private String ticketDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        private String ticketDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         deleteTicket dt = new deleteTicket();
         String delete = dt.ticketDelete(id);
         if (delete.equals("ok")) {
@@ -491,13 +557,13 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/ticket/answer/{id}", method = RequestMethod.GET)
-    private String ticketAns(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+        private String ticketAns(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
         return "admin/add/ADDcommentticket";
     }
 
     @RequestMapping(value = "admin/ticket/answer/add")
-    private String ticketAnswer(ModelMap mv, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        private String ticketAnswer(ModelMap mv, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
         insertCommentTicket ict = new insertCommentTicket();
         String insert = ict.insertCommentTicket(request.getParameter("ticked_id"), request.getParameter("user_id"), request.getParameter("comm"));
@@ -511,14 +577,14 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/ticket_answ", method = RequestMethod.GET)
-    private String ticketAnsweView(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+        private String ticketAnsweView(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         selectCommentTicket st = new selectCommentTicket();
         mv.addAttribute("list_ticekt", st.selectTicket());
         return "admin/ticketansw";
     }
 
     @RequestMapping(value = "admin/ticketansw/delete/{id}", method = RequestMethod.GET)
-    private String ticketAnswDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        private String ticketAnswDelete(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
         deleteTicketAnsw dt = new deleteTicketAnsw();
         String delete = dt.ticketDelete(id);
         if (delete.equals("ok")) {
@@ -530,53 +596,45 @@ public class AdminController {
         }
         return "redirect:/admin/ticket_answ.htm";
     }
-    
+
     @RequestMapping(value = "admin/fixlist")
-    private String fixlistView(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
+        private String fixlistView(ModelMap mv, HttpServletRequest request) throws SQLException, UnsupportedEncodingException {
         selectFixList st = new selectFixList();
         mv.addAttribute("list_fix", st.selectFixList());
         return "admin/fixlist";
     }
+
     @RequestMapping(value = "admin/fixlist/add")
-    private String fixlistADD(ModelMap mv, HttpServletRequest request,RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
-       request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
-        if(request.getParameter("send")!=null)
-       {
-           insertFixList ifl = new insertFixList();
-           String add = ifl.insertFixList(request.getParameter("comm"), request.getParameter("finished"));
-           if(add.equals("ok"))
-           {
-               redirectAttributes.addFlashAttribute("delete_ok", "Добавление прошло успешно");
-               return "redirect:/admin/fixlist.htm";
-           }
-           else
-           {
-               redirectAttributes.addFlashAttribute("delete_ok", "Добавление не удалось"+add);
-               return "redirect:/admin/fixlist.htm";
-           }
-       }
+        private String fixlistADD(ModelMap mv, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        if (request.getParameter("send") != null) {
+            insertFixList ifl = new insertFixList();
+            String add = ifl.insertFixList(request.getParameter("comm"), request.getParameter("finished"));
+            if (add.equals("ok")) {
+                redirectAttributes.addFlashAttribute("delete_ok", "Добавление прошло успешно");
+                return "redirect:/admin/fixlist.htm";
+            } else {
+                redirectAttributes.addFlashAttribute("delete_ok", "Добавление не удалось" + add);
+                return "redirect:/admin/fixlist.htm";
+            }
+        }
         return "admin/add/ADDfixlist";
     }
+
     @RequestMapping(value = "admin/fixlist/edit/{id}")
-    private String fixlistEDIT(ModelMap mv,@PathVariable("id") String id ,HttpServletRequest request,RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
-       request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
-        if(id.equals("edit"))
-       {
-           updateFixlist ifl = new updateFixlist();
-           String add = ifl.updateFixList(request.getParameter("comm"), request.getParameter("finished"), request.getParameter("indf"));
-           if(add.equals("ok"))
-           {
-               redirectAttributes.addFlashAttribute("delete_ok", "Правка прошла успешно");
-               return "redirect:/admin/fixlist.htm";
-           }
-           else
-           {
-               redirectAttributes.addFlashAttribute("delete_ok", "Правка не удалась"+add);
-               return "redirect:/admin/fixlist.htm";
-           }
-       }
-        else
-        {
+        private String fixlistEDIT(ModelMap mv, @PathVariable("id") String id, HttpServletRequest request, RedirectAttributes redirectAttributes) throws SQLException, UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");                      //задать кодировку входа
+        if (id.equals("edit")) {
+            updateFixlist ifl = new updateFixlist();
+            String add = ifl.updateFixList(request.getParameter("comm"), request.getParameter("finished"), request.getParameter("indf"));
+            if (add.equals("ok")) {
+                redirectAttributes.addFlashAttribute("delete_ok", "Правка прошла успешно");
+                return "redirect:/admin/fixlist.htm";
+            } else {
+                redirectAttributes.addFlashAttribute("delete_ok", "Правка не удалась" + add);
+                return "redirect:/admin/fixlist.htm";
+            }
+        } else {
             selectFixList st = new selectFixList();
             mv.addAttribute("list_fix", st.selectFixListWhereId(id));
         }
